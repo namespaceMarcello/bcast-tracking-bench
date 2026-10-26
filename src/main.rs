@@ -464,6 +464,13 @@ async fn run_manual_mode(args: &[String]) -> Result<()> {
     Ok(())
 }
 
+// The image is built on musl, whose allocator scales badly across the Tokio
+// worker threads that drain the listener sockets: under a SET load the reads
+// fall behind, the next listener's handshake waits behind unread pushes, and
+// attaching stalls at ~50 listeners (redis-benchmarks-specification#584).
+#[global_allocator]
+static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let args: Vec<String> = env::args().skip(1).collect();
