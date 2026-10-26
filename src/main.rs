@@ -467,7 +467,9 @@ async fn run_manual_mode(args: &[String]) -> Result<()> {
 // The image is built on musl, whose allocator scales badly across the Tokio
 // worker threads that drain the listener sockets: under a SET load the reads
 // fall behind, the next listener's handshake waits behind unread pushes, and
-// attaching stalls at ~50 listeners (redis-benchmarks-specification#584).
+// attaching stalls after a few dozen listeners
+// (redis-benchmarks-specification#584). It is set for every target, not only
+// musl, so a local build behaves like the image.
 #[global_allocator]
 static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
 
